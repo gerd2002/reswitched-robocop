@@ -31,6 +31,7 @@ object Listener {
 
     Management.ShutdownSingle,
     Management.ShutdownAll,
+    Management.FullShutdown,
     Management.RestartSingle,
     Management.RestartAll,
     Management.RestartShard,

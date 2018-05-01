@@ -1,4 +1,7 @@
-<robocop>
-    <token></token>
-    <webhook></webhook>
-</robocop>
+<config>
+    <robocop>
+        <token></token>
+        <webhook></webhook>
+        <shards></shards>
+    </robocop>
+</config>
