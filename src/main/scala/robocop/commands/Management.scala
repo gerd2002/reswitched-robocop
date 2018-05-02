@@ -115,7 +115,7 @@ object Management {
         case 0 => message.respondDM(s"List of Shards: `${Main.shardManager.getShards.toArray(Array[JDA]()).map(_.getShardInfo.getShardId).mkString(", ")}`\nCurrent Shard: **${message.getJDA.getShardInfo.getShardId}**")
         case 1 => if (args(0).matches("\\d+")) {
           val shardId = args(0).toInt
-          Main.shardManager.shutdown(shardId)
+          Main.shardManager.restart(shardId)
         }
         case _ => message.respondDM("Requires either no or one argument.")
       }

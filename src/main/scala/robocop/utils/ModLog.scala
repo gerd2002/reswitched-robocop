@@ -3,6 +3,7 @@ package robocop.utils
 import java.time.OffsetDateTime
 
 import net.dv8tion.jda.core.entities.{Guild, IMentionable, TextChannel, User}
+import robocop.Main
 import robocop.database.Robobase
 import robocop.listeners.Listener
 import robocop.models.Configuration
@@ -38,7 +39,7 @@ object ModLog {
         config
     }
     config.joinlogChannel match {
-      case Some(x) => val channel = guild.getTextChannelById(x)
+      case Some(x) => val channel = Main.shardManager.getTextChannelById(x)
         if (channel != null)
           channel.sendMessage(message).queue()
       case None =>
@@ -54,7 +55,7 @@ object ModLog {
         config
     }
     config.modlogChannel match {
-      case Some(x) => val channel = guild.getTextChannelById(x)
+      case Some(x) => val channel = Main.shardManager.getTextChannelById(x)
         if (channel != null)
           channel.sendMessage(message).queue()
       case None =>

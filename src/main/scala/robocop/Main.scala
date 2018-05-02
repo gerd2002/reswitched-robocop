@@ -45,6 +45,7 @@ object Main {
         .setShardsTotal(sharding)
         .setShards(0, sharding - 1)
         .addEventListenerProvider((value: Int) => new Listener(value, webhookUrl))
+        .addEventListenerProvider((value: Int) => new LogListener(value))
         .setToken(token)
         .setGame(Game.watching("the Terminator Trilogy"))
         .setAudioEnabled(false)
