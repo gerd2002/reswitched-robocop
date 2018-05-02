@@ -14,11 +14,12 @@ object Moderation {
     val modRoles = mod.getRoles.toArray(Array[Role]())
     val targetRoles = target.getRoles.toArray(Array[Role]())
     val selfRoles = mod.getGuild.getSelfMember.getRoles.toArray(Array[Role]())
-    println(modRoles.head.getPosition, targetRoles.head.getPosition)
-    if (modRoles.head.getPosition <= targetRoles.head.getPosition)
-      throw BotError.InsufficentRoles
-    if (selfRoles.head.getPosition <= targetRoles.head.getPosition)
-      throw BotError.InsufficentBotRoles
+    if (targetRoles.nonEmpty) {
+      if (modRoles.head.getPosition <= targetRoles.head.getPosition)
+        throw BotError.InsufficentRoles
+      if (selfRoles.head.getPosition <= targetRoles.head.getPosition)
+        throw BotError.InsufficentBotRoles
+    }
   }
 
   object Check extends Command {
@@ -77,7 +78,7 @@ object Moderation {
             val reason = args.filter(!_.contains(target.getAsMention)).mkString(" ")
             val member = guild.getMember(target)
             if(member != null) {
-              checkPossible(message.getMember, member)
+              checkPossible(guild.getMember(message.getAuthor), member)
               message.getGuild.getController.kick(member, s"${author.getName}#${author.getDiscriminator}: $reason").queue()
               Some(Loglines.logline(ActionType.Kick, target, author, reason))
             } else {

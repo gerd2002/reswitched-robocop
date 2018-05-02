@@ -14,6 +14,7 @@ import robocop.commands._
 import robocop.database.Robobase
 import robocop.models._
 import robocop.utils.{ModLog, WebhookBuffer}
+import robocop.utils.Implicits._
 
 import scala.collection.immutable.Queue
 
@@ -37,6 +38,7 @@ object Listener {
     Management.RestartShard,
     Management.BetaTest,
     Management.PrintConfig,
+    Management.Update,
 
     Eval.EvalCommand,
     Eval.NashornEval,
@@ -168,7 +170,7 @@ class Listener(shardId: Int, webhookUrl: String) extends ListenerAdapter {
         commandObj.execute(args, message, db)
       }
     } catch {
-      case err: Throwable => channel.sendMessage(err.toString).queue()
+      case err: Throwable => err.printStackTrace(); channel.sendMessage(err.toString.take(2000)).queue()
     }
   }
 
@@ -176,7 +178,7 @@ class Listener(shardId: Int, webhookUrl: String) extends ListenerAdapter {
     val self = event.getJDA.getSelfUser
     loghook.profile = Some(self.getAvatarUrl)
     loghook.name = Some(self.getName)
-    println(s"Ready! Connected Shard ${event.getJDA.getShardInfo.getShardId}")
+    println(info"Ready! Connected Shard ${event.getJDA.getShardInfo.getShardId}")
     loghook += s"ℹ Shard `$shard/${event.getJDA.getShardInfo.getShardTotal}`: <:online:438228497505452032> CONNECTED"
 
     val executor = new ScheduledThreadPoolExecutor(1)
@@ -193,16 +195,17 @@ class Listener(shardId: Int, webhookUrl: String) extends ListenerAdapter {
   }
 
   override def onDisconnect(event: DisconnectEvent): Unit = {
-    println(s"Disconnected with ${event.getCloseCode} at ${event.getDisconnectTime}")
+    println(warn"Disconnected with ${event.getCloseCode} at ${event.getDisconnectTime}")
     loghook += s"ℹ Shard `$shard/${event.getJDA.getShardInfo.getShardTotal}`: <:dnd:438228496431579148> DISCONNECTED"
   }
 
   override def onReconnect(event: ReconnectedEvent): Unit = {
-    println(s"Reconnected Shard ${event.getJDA.getShardInfo.getShardId}")
+    println(warn"Reconnected Shard ${event.getJDA.getShardInfo.getShardId}")
     loghook += s"ℹ Shard `$shard/${event.getJDA.getShardInfo.getShardTotal}`: <:away:438228497408720896> RECONNECTED"
   }
 
   override def onShutdown(event: ShutdownEvent): Unit = {
+    println(warn"Shutting down $shard")
     loghook ! s"🛰 Shutting down `$shard/${event.getJDA.getShardInfo.getShardTotal}`."
     loghook.shutdown()
   }

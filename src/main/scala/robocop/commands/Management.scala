@@ -1,5 +1,8 @@
 package robocop.commands
 
+import java.io.{BufferedReader, InputStreamReader}
+
+import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.entities.{Member, Message, User}
 import robocop.Main
 import robocop.database.Robobase
@@ -20,7 +23,8 @@ object Management {
     override def hidden: Boolean = true
 
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
-      message.getJDA.shutdown()
+      val shardId = message.getJDA.getShardInfo.getShardId
+      Main.shardManager.shutdown(shardId)
       None
     }
   }
@@ -37,7 +41,7 @@ object Management {
     override def hidden: Boolean = true
 
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
-      Main.shards.values.foreach(_.shutdown())
+      Main.shardManager.shutdown()
       None
     }
   }
@@ -54,11 +58,7 @@ object Management {
     override def hidden: Boolean = true
 
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
-      Main.shards.foreach {
-        case (shardId, shardThread) =>
-          shardThread.shutdown()
-          Main.shards -= shardId
-      }
+      Main.shardManager.shutdown()
       System.exit(0)
       None
     }
@@ -77,9 +77,7 @@ object Management {
 
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
       val shardId = message.getJDA.getShardInfo.getShardId
-      message.getJDA.shutdown()
-      Main.shards -= shardId
-      Main.shards += (shardId -> Main.start(shardId))
+      Main.shardManager.restart(shardId)
       None
     }
   }
@@ -96,12 +94,7 @@ object Management {
     override def hidden: Boolean = true
 
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
-      Main.shards.foreach {
-        case (shardId, shardThread) =>
-          shardThread.shutdown()
-          Main.shards -= shardId
-          Main.shards += (shardId -> Main.start(shardId))
-      }
+      Main.shardManager.restart()
       None
     }
   }
@@ -119,14 +112,10 @@ object Management {
 
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
       args.length match {
-        case 0 => message.respondDM(s"List of Shards: `${Main.sharding.mkString(", ")}`\nCurrent Shard: **${message.getJDA.getShardInfo.getShardId}**")
+        case 0 => message.respondDM(s"List of Shards: `${Main.shardManager.getShards.toArray(Array[JDA]()).map(_.getShardInfo.getShardId).mkString(", ")}`\nCurrent Shard: **${message.getJDA.getShardInfo.getShardId}**")
         case 1 => if (args(0).matches("\\d+")) {
           val shardId = args(0).toInt
-          if (Main.sharding.contains(shardId)) {
-            Main.shards(shardId).shutdown()
-            Main.shards -= shardId
-            Main.shards += (shardId -> Main.start(shardId))
-          }
+          Main.shardManager.shutdown(shardId)
         }
         case _ => message.respondDM("Requires either no or one argument.")
       }
@@ -154,8 +143,46 @@ object Management {
 
     override def help: String = "Sends the config."
 
+    override def checkGuild(member: Member): Boolean = Checks.isOwner(member)
+
+    override def checkDM(user: User): Boolean = Checks.isOwner(user)
+
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
       message.respond(db.config(message.getGuild.getIdLong).toString)
+      None
+    }
+  }
+
+  object Update extends Command {
+    override def name: String = "update"
+
+    override def hidden: Boolean = true
+
+    override def help: String = "Pulls the latest update from GitHub and rebuilds the bot."
+
+    override def checkGuild(member: Member): Boolean = Checks.isOwner(member)
+
+    override def checkDM(user: User): Boolean = Checks.isOwner(user)
+
+    override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
+      val p = Runtime.getRuntime.exec("git pull")
+      p.waitFor
+
+      val reader = new BufferedReader(new InputStreamReader(p.getInputStream))
+
+      var out = ""
+
+      def read(reader: BufferedReader): String = {
+        val line = reader.readLine()
+        if (line == null) {
+          ""
+        } else {
+          line + "\n" + read(reader)
+        }
+      }
+
+      message.respond(s"```\n${read(reader)}```")
+
       None
     }
   }
