@@ -39,6 +39,7 @@ object Listener {
     Management.BetaTest,
     Management.PrintConfig,
     Management.Update,
+    Management.FullRestart,
 
     Eval.EvalCommand,
     Eval.NashornEval,

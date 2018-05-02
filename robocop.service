@@ -1,0 +1,8 @@
+[Unit]
+Description=Robocop
+
+[Service]
+ExecStart=/usr/bin/env java -jar /var/robocop/target/scala-2.12/robocop-assembly-0.1.0.jar
+
+[Install]
+WantedBy=multi-user.target

@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.{Member, Message, User}
 import robocop.Main
 import robocop.database.Robobase
 import robocop.models.Command
-import robocop.utils.Checks
+import robocop.utils.{ChannelBuffer, Checks}
 
 object Management {
 
@@ -165,24 +165,78 @@ object Management {
     override def checkDM(user: User): Boolean = Checks.isOwner(user)
 
     override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
-      val p = Runtime.getRuntime.exec("git pull")
-      p.waitFor
-
-      val reader = new BufferedReader(new InputStreamReader(p.getInputStream))
-
-      var out = ""
-
-      def read(reader: BufferedReader): String = {
-        val line = reader.readLine()
-        if (line == null) {
-          ""
+      val thread = new Thread(() => {
+        var command = "git pull"
+        if (args.contains("--https"))
+          command += " https master"
+        val exit = execCommand(command, message)
+        if (exit == 0) {
+          execCommand("sbt assembly -batch", message)
         } else {
-          line + "\n" + read(reader)
+          message.respond(s"Pull exited with code $exit")
+        }
+      })
+      thread.start()
+
+      None
+    }
+
+    private def execCommand(command: String, message: Message): Integer = {
+      val p = Runtime.getRuntime.exec(command)
+      val errorReader = new BufferedReader(new InputStreamReader(p.getErrorStream))
+      val stdReader = new BufferedReader(new InputStreamReader(p.getInputStream))
+
+      val buffer = ChannelBuffer(message.getChannel)
+
+      while (p.isAlive) {
+        val lineErr = errorReader.readLine()
+        val lineStd = stdReader.readLine()
+        if (lineStd != null) {
+          buffer += lineStd
+          println(lineStd)
+        }
+        if (lineErr != null) {
+          buffer += lineErr
+          println(lineErr)
         }
       }
 
-      message.respond(s"```\n${read(reader)}```")
+      var line = ""
 
+      def check(bufferReader: BufferedReader): Boolean = {
+        line = bufferReader.readLine()
+        line != null
+      }
+
+      while (check(stdReader)) {
+        buffer += line
+        println(line)
+      }
+
+      while (check(errorReader)) {
+        buffer += line
+        println(line)
+      }
+
+      buffer.shutdown()
+      p.exitValue()
+    }
+  }
+
+  object FullRestart extends Command {
+    override def name: String = "restart"
+
+    override def hidden: Boolean = true
+
+    override def help: String = "Fully restarts the bot."
+
+    override def checkGuild(member: Member): Boolean = Checks.isOwner(member)
+
+    override def checkDM(user: User): Boolean = Checks.isOwner(user)
+
+    override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
+      Main.shardManager.shutdown()
+      System.exit(124)
       None
     }
   }
