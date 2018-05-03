@@ -39,7 +39,7 @@ object Main {
 
     sharding = (config \\ "shards" text).toInt
 
-    println(debug"Starting up with ${sharding} shards.")
+    println(debug"Starting up with $sharding shards.")
 
     shardManager = new DefaultShardManagerBuilder()
         .setShardsTotal(sharding)

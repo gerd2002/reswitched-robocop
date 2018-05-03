@@ -25,6 +25,7 @@ object Listener {
     Info.Help,
     Info.Ping,
     Info.Created,
+    Info.Damn,
 
     Lockdown.Lock,
     Lockdown.SilentLock,
