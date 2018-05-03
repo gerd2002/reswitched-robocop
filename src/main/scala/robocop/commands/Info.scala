@@ -83,15 +83,4 @@ object Info {
     }
   }
 
-  object Damn extends Command {
-    override def name: String = "damn"
-
-    override def help: String = "D.A.M.N."
-
-    override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
-      message.respond("DAMN sucks.")
-      Some(s"⚠ ${message.getAuthor.getAsMention} tried to use DAMN [TODO].")
-    }
-  }
-
 }
