@@ -24,7 +24,7 @@ object ModLog {
 
     object Kick extends ActionType("👢", "Kick", "was kicked")
 
-    object Leave extends ActionType("📤", "Leave", "has left the server")
+    object Leave extends ActionType("📤", "Leave", "has left the server. Joined")
 
     object Join extends ActionType("📥", "Join", "has joined the server. Created")
 

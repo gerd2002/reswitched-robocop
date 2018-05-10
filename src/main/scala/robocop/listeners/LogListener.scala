@@ -229,12 +229,15 @@ class LogListener(shardId: Int) extends ListenerAdapter {
               UserLogs.log(AcTyp.Ban, event.getGuild, user, ban.getReason)
             }
           }
-        }, (_: Throwable) => UserLogs.log(AcTyp.Ban, event.getGuild, user, ban.getReason))
+        }, (e: Throwable) => {
+          e.printStackTrace()
+          UserLogs.log(AcTyp.Ban, event.getGuild, user, ban.getReason)
+        })
       } else {
         guild.getAuditLogs.`type`(ActionType.KICK).queue((jlog: java.util.List[AuditLogEntry]) => {
           val log = jlog.toArray().map(_.asInstanceOf[AuditLogEntry]).filter(_.getTargetId == user.getId)
           if (log.isEmpty) {
-            UserLogs.logJoinLeave(AcTyp.Leave, event.getGuild, user)
+            UserLogs.logJoinLeave(AcTyp.Leave, event.getGuild, user, event.getMember.getJoinDate)
           } else {
             val entry = log.head
             if (Math.abs(entry.getCreationTime.toEpochSecond - System.currentTimeMillis() / 1000) < ((3 * event.getJDA.getPing) / 1000 + 5)) {
@@ -246,10 +249,13 @@ class LogListener(shardId: Int) extends ListenerAdapter {
                 UserLogs.log(AcTyp.Kick, event.getGuild, user, entry.getUser, entry.getReason)
               }
             } else {
-              UserLogs.logJoinLeave(AcTyp.Leave, event.getGuild, user)
+              UserLogs.logJoinLeave(AcTyp.Leave, event.getGuild, user, event.getMember.getJoinDate)
             }
           }
-        }, (_: Throwable) => UserLogs.logJoinLeave(AcTyp.Leave, event.getGuild, user))
+        }, (e: Throwable) => {
+          e.printStackTrace()
+          UserLogs.logJoinLeave(AcTyp.Leave, event.getGuild, user, event.getMember.getJoinDate)
+        })
       }
     })
   }
