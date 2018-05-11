@@ -57,7 +57,7 @@ case class ChannelBufferEditing(channel: MessageChannel) {
         message.editMessage(s"```\n${message.getContentDisplay.replace("```", "")}$msg\n```").queue()
       }
     } else {
-      channel.sendMessage(s"```\n$msg\n```").queue(x => message = x)
+      channel.sendMessage(s"```\nnull\n```").queue(x => message = x)
     }
   }
 
