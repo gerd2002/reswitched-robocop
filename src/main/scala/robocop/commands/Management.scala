@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.{Member, Message, User}
 import robocop.Main
 import robocop.database.Robobase
 import robocop.models.Command
-import robocop.utils.{ChannelBuffer, Checks}
+import robocop.utils.{ChannelBufferEditing, Checks}
 
 object Management {
 
@@ -186,7 +186,7 @@ object Management {
       val errorReader = new BufferedReader(new InputStreamReader(p.getErrorStream))
       val stdReader = new BufferedReader(new InputStreamReader(p.getInputStream))
 
-      val buffer = ChannelBuffer(message.getChannel)
+      val buffer = ChannelBufferEditing(message.getChannel)
 
       while (p.isAlive) {
         val lineErr = errorReader.readLine()

@@ -4,7 +4,7 @@ import java.util.concurrent.{ScheduledThreadPoolExecutor, TimeUnit}
 
 import net.dv8tion.jda.core.entities.{Message, MessageChannel}
 
-case class ChannelBuffer(channel: MessageChannel) {
+case class ChannelBufferEditing(channel: MessageChannel) {
 
   private val executor = new ScheduledThreadPoolExecutor(1)
   private val loop = new Runnable {
@@ -38,12 +38,26 @@ case class ChannelBuffer(channel: MessageChannel) {
   private def send(msg: String): Unit = {
     if (message != null) {
       if (message.getContentRaw.length + msg.length >= 1900) {
-        channel.sendMessage(s"```\n$msg```").queue(x => message = x)
+        if (msg.length >= 1900) {
+          var (head, tail) = msg.splitAt(1900)
+          var parts = Seq(head.toString)
+          while (tail.length >= 1900) {
+            val tuple = msg.splitAt(1900)
+            head = tuple._1
+            tail = tuple._2
+            parts :+= head
+          }
+          parts :+= tail
+          parts.filter(_!=parts.last).foreach(channel.sendMessage(_).queue())
+          channel.sendMessage(parts.last).queue(x => message = x)
+        } else {
+          channel.sendMessage(msg).queue(x => message = x)
+        }
       } else {
-        message.editMessage("```\n" + message.getContentDisplay + msg + "```").queue()
+        message.editMessage(message.getContentDisplay + msg).queue()
       }
     } else {
-      channel.sendMessage(s"```\n$msg```").queue(x => message = x)
+      channel.sendMessage(msg).queue(x => message = x)
     }
   }
 
