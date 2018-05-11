@@ -76,6 +76,8 @@ object Listener {
       } else {
         agoString += f"$hours%2d:$minutes%2d:$seconds%2d"
       }
+    } else {
+      agoString += f"$hours%2d:$minutes%2d:$seconds%2d"
     }
     agoString
   }
