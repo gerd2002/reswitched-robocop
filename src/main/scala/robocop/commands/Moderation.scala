@@ -160,7 +160,39 @@ object Moderation {
             throw new BotError.NoPermissions(Permission.BAN_MEMBERS)
           }
         } else {
-          message.respondMention("Please mention the user you want to ban.")
+          message.respondMention("Please mention the user ID you want to ban.")
+          None
+        }
+      } else {
+        message.respondDM("This command can only be used in Servers.")
+        None
+      }
+    }
+  }
+
+  object Unban extends Command {
+    override def name: String = "unban"
+
+    override def help: String = "Unbans a user by ID and adds the reason to audit and modlogs."
+
+    override def checkGuild(member: Member): Boolean = Checks.standardAdmin(member)
+
+    override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
+      if (message.isFromType(ChannelType.TEXT)) {
+        val author = message.getAuthor
+        val guild = message.getGuild
+        val ids = args.filter(_.matches("\\d+"))
+        if(ids.nonEmpty) {
+          if (message.getGuild.getSelfMember.hasPermission(Permission.BAN_MEMBERS)) {
+            val target = ids.head
+            val reason = args.filter(!_.contains(target)).mkString(" ")
+            message.getGuild.getController.unban(target).reason(s"${author.getName}#${author.getDiscriminator}: $reason").queue()
+            Some(Loglines.logline(ActionType.Unban, target, author, reason))
+          } else {
+            throw new BotError.NoPermissions(Permission.BAN_MEMBERS)
+          }
+        } else {
+          message.respondMention("Please mention the user ID you want to unban.")
           None
         }
       } else {
