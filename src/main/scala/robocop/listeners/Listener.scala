@@ -48,7 +48,8 @@ object Listener {
     Moderation.Kick,
     Moderation.Ban,
     Moderation.Forceban,
-    Moderation.Unban
+    Moderation.Unban,
+    Moderation.Check
   )
 
   def ago(time: OffsetDateTime): (Long, Long, Long, Long, Long) = {
