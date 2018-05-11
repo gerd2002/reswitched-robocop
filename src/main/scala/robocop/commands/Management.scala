@@ -192,11 +192,11 @@ object Management {
         val lineErr = errorReader.readLine()
         val lineStd = stdReader.readLine()
         if (lineStd != null) {
-          buffer += lineStd
+          buffer :+= lineStd
           println(lineStd)
         }
         if (lineErr != null) {
-          buffer += lineErr
+          buffer :+= lineErr
           println(lineErr)
         }
       }
@@ -209,12 +209,12 @@ object Management {
       }
 
       while (check(stdReader)) {
-        buffer += line
+        buffer :+= line
         println(line)
       }
 
       while (check(errorReader)) {
-        buffer += line
+        buffer :+= line
         println(line)
       }
 
