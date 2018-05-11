@@ -57,7 +57,23 @@ case class ChannelBufferEditing(channel: MessageChannel) {
         message.editMessage(s"```\n${message.getContentDisplay.replace("```", "")}$msg\n```").queue()
       }
     } else {
-      channel.sendMessage(s"```\nnull\n```").queue(x => message = x)
+      if (msg.length >= 1900) {
+        if (msg.length >= 1900) {
+          var (head, tail) = msg.splitAt(1900)
+          var parts = Seq(head.toString)
+          while (tail.length >= 1900) {
+            val tuple = msg.splitAt(1900)
+            head = tuple._1
+            tail = tuple._2
+            parts :+= head
+          }
+          parts :+= tail
+          parts.filter(_ != parts.last).foreach(x => s"```\n$x\n```")
+          channel.sendMessage(s"```\n${parts.last}\n```").queue(x => message = x)
+        } else {
+          channel.sendMessage(s"```\n$msg\n```").queue(x => message = x)
+        }
+      }
     }
   }
 
