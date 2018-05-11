@@ -48,16 +48,16 @@ case class ChannelBufferEditing(channel: MessageChannel) {
             parts :+= head
           }
           parts :+= tail
-          parts.filter(_!=parts.last).foreach(channel.sendMessage(_).queue())
-          channel.sendMessage(parts.last).queue(x => message = x)
+          parts.filter(_!=parts.last).foreach(x => s"```\n$x\n```")
+          channel.sendMessage(s"```\n${parts.last}\n```").queue(x => message = x)
         } else {
-          channel.sendMessage(msg).queue(x => message = x)
+          channel.sendMessage(s"```\n$msg\n```").queue(x => message = x)
         }
       } else {
-        message.editMessage(message.getContentDisplay + msg).queue()
+        message.editMessage(s"```\n${message.getContentDisplay.replace("```", "")}$msg\n```").queue()
       }
     } else {
-      channel.sendMessage(msg).queue(x => message = x)
+      channel.sendMessage(s"```\n$msg\n```").queue(x => message = x)
     }
   }
 
