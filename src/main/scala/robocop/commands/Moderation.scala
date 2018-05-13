@@ -22,6 +22,22 @@ object Moderation {
     }
   }
 
+  def softCheck(mod: Member, target: Member): Boolean = {
+    val modRoles = mod.getRoles.toArray(Array[Role]())
+    val targetRoles = target.getRoles.toArray(Array[Role]())
+    val selfRoles = mod.getGuild.getSelfMember.getRoles.toArray(Array[Role]())
+    if (targetRoles.nonEmpty) {
+      if (modRoles.head.getPosition <= targetRoles.head.getPosition)
+        false
+      else if (selfRoles.head.getPosition <= targetRoles.head.getPosition)
+        false
+      else
+        true
+    } else {
+      true
+    }
+  }
+
   object Check extends Command {
     override def name: String = "check"
 
@@ -50,7 +66,7 @@ object Moderation {
             throw new BotError.NoPermissions(Permission.KICK_MEMBERS)
           }
         } else {
-          message.respondMention("Please mention the user you want to kick.")
+          message.respondMention("Please mention the user you want to check.")
           None
         }
       } else {
@@ -194,6 +210,58 @@ object Moderation {
         } else {
           message.respondMention("Please mention the user ID you want to unban.")
           None
+        }
+      } else {
+        message.respondDM("This command can only be used in Servers.")
+        None
+      }
+    }
+  }
+
+  object Lameface extends Command {
+    override def name: String = "lameface"
+
+    override def help: String = "Changes all users nicknames whos nicknames or usernames are considered hoisting."
+
+    override def checkGuild(member: Member): Boolean = Checks.standardAdmin(member)
+
+    override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
+      if (message.isFromType(ChannelType.TEXT)) {
+        val author = message.getAuthor
+        val guild = message.getGuild
+        if (message.getGuild.getSelfMember.hasPermission(Permission.NICKNAME_MANAGE)) {
+          val members = guild.getMembers.toArray(Array[Member]())
+          val targets = members.filter(x => x.getEffectiveName.charAt(0) <= '/').filter(x => Moderation.softCheck(message.getMember, x))
+          targets.foreach(guild.getController.setNickname(_, "🐱 I AM A LAMEFACE 🐱").reason("Lamefacing").queue())
+          Some(Loglines.logline(new ActionType.Lameface(targets.length), author))
+        } else {
+          throw new BotError.NoPermissions(Permission.NICKNAME_MANAGE)
+        }
+      } else {
+        message.respondDM("This command can only be used in Servers.")
+        None
+      }
+    }
+  }
+
+  object Lamecount extends Command {
+    override def name: String = "lamecount"
+
+    override def help: String = "Count of all users whos nicknames or usernames are considered hoisting."
+
+    override def checkGuild(member: Member): Boolean = Checks.standardAdmin(member)
+
+    override def execute(args: Array[String], message: Message, db: Robobase): Option[String] = {
+      if (message.isFromType(ChannelType.TEXT)) {
+        val author = message.getAuthor
+        val guild = message.getGuild
+        if (message.getGuild.getSelfMember.hasPermission(Permission.NICKNAME_MANAGE)) {
+          val members = guild.getMembers.toArray(Array[Member]())
+          val targets = members.filter(x => x.getEffectiveName.charAt(0) <= '/').filter(x => Moderation.softCheck(message.getMember, x))
+          message.respond(s"Would lameface ${targets.length} users. Execute lameface to continue.")
+          None
+        } else {
+          throw new BotError.NoPermissions(Permission.NICKNAME_MANAGE)
         }
       } else {
         message.respondDM("This command can only be used in Servers.")

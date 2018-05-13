@@ -49,7 +49,9 @@ object Listener {
     Moderation.Ban,
     Moderation.Forceban,
     Moderation.Unban,
-    Moderation.Check
+    Moderation.Check,
+    Moderation.Lameface,
+    Moderation.Lamecount
   )
 
   def ago(time: OffsetDateTime): (Long, Long, Long, Long, Long) = {
@@ -147,7 +149,8 @@ class Listener(shardId: Int, webhookUrl: String) extends ListenerAdapter {
         }
       }
     } catch {
-      case err: BotError => channel.sendMessage(err.toString).queue()
+      case err: BotError => err.printStackTrace(); channel.sendMessage(err.toString.take(2000)).queue()
+      case err: Throwable => err.printStackTrace()
     }
 
   }
@@ -175,7 +178,8 @@ class Listener(shardId: Int, webhookUrl: String) extends ListenerAdapter {
         commandObj.execute(args, message, db)
       }
     } catch {
-      case err: Throwable => err.printStackTrace(); channel.sendMessage(err.toString.take(2000)).queue()
+      case err: BotError => err.printStackTrace(); channel.sendMessage(err.toString.take(2000)).queue()
+      case err: Throwable => err.printStackTrace()
     }
   }
 

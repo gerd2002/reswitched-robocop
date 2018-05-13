@@ -28,6 +28,8 @@ object ModLog {
 
     object Join extends ActionType("📥", "Join", "has joined the server. Created")
 
+    class Lameface(count: Int) extends ActionType("🐱", "Lameface", s"lamefaced $count users")
+
   }
 
   def logJoinLeave(guild: Guild, message: String): Unit = {
