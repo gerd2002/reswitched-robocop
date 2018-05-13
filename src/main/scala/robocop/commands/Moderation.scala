@@ -218,6 +218,8 @@ object Moderation {
     }
   }
 
+  def lamelist(guild: Guild, moderator: Member): Array[Member] = guild.getMembers.toArray(Array[Member]()).filter(x => x.getEffectiveName.charAt(0) < 'A').filter(softCheck(moderator, _))
+
   object Lameface extends Command {
     override def name: String = "lameface"
 
@@ -230,8 +232,7 @@ object Moderation {
         val author = message.getAuthor
         val guild = message.getGuild
         if (message.getGuild.getSelfMember.hasPermission(Permission.NICKNAME_MANAGE)) {
-          val members = guild.getMembers.toArray(Array[Member]())
-          val targets = members.filter(x => x.getEffectiveName.charAt(0) <= '/').filter(x => Moderation.softCheck(message.getMember, x))
+          val targets = lamelist(guild, message.getMember)
           targets.foreach(guild.getController.setNickname(_, "🐱 I AM A LAMEFACE 🐱").reason("Lamefacing").queue())
           Some(Loglines.logline(new ActionType.Lameface(targets.length), author))
         } else {
@@ -256,8 +257,7 @@ object Moderation {
         val author = message.getAuthor
         val guild = message.getGuild
         if (message.getGuild.getSelfMember.hasPermission(Permission.NICKNAME_MANAGE)) {
-          val members = guild.getMembers.toArray(Array[Member]())
-          val targets = members.filter(x => x.getEffectiveName.charAt(0) <= '/').filter(x => Moderation.softCheck(message.getMember, x))
+          val targets = lamelist(guild, message.getMember)
           message.respond(s"Would lameface ${targets.length} users. Execute lameface to continue.")
           None
         } else {
