@@ -12,6 +12,9 @@ object ModLog {
 
   val db = new Robobase
 
+  var modlogBuffer: Map[Long, ChannelBuffer] = Map()
+  var joinlogBuffer: Map[Long, ChannelBuffer] = Map()
+
   sealed abstract case class ActionType(symbol: String, name: String, verb: String)
 
   object ActionType {
@@ -33,34 +36,45 @@ object ModLog {
   }
 
   def logJoinLeave(guild: Guild, message: String): Unit = {
-    val config = db.config(guild.getIdLong) match {
-      case Some(cfg) => cfg
-      case None =>
-        val config = Configuration.default(guild.getIdLong)
-        db.config += config
-        config
-    }
-    config.joinlogChannel match {
-      case Some(x) => val channel = Main.shardManager.getTextChannelById(x)
-        if (channel != null)
-          channel.sendMessage(message).queue()
-      case None =>
+    joinlogBuffer.get(guild.getIdLong) match {
+      case Some(buffer) => buffer += message
+      case None => {
+        val config = db.config(guild.getIdLong) match {
+          case Some(cfg) => cfg
+          case None =>
+            val config = Configuration.default(guild.getIdLong)
+            db.config += config
+            config
+        }
+        config.joinlogChannel match {
+          case Some(x) => val channel = Main.shardManager.getTextChannelById(x)
+            if (channel != null)
+              joinlogBuffer += (guild.getIdLong -> ChannelBuffer(channel))
+          case None =>
+        }
+      }
     }
   }
 
   def log(guild: Guild, message: String): Unit = {
-    val config = db.config(guild.getIdLong) match {
-      case Some(cfg) => cfg
-      case None =>
-        val config = Configuration.default(guild.getIdLong)
-        db.config += config
-        config
-    }
-    config.modlogChannel match {
-      case Some(x) => val channel = Main.shardManager.getTextChannelById(x)
-        if (channel != null)
-          channel.sendMessage(message).queue()
-      case None =>
+    modlogBuffer.get(guild.getIdLong) match {
+      case Some(buffer) => buffer += message
+      case None => {
+        val config = db.config(guild.getIdLong) match {
+          case Some(cfg) => cfg
+          case None =>
+            val config = Configuration.default(guild.getIdLong)
+            db.config += config
+            config
+        }
+        config.modlogChannel match {
+          case Some(x) => val channel = Main.shardManager.getTextChannelById(x)
+            if (channel != null)
+              modlogBuffer += (guild.getIdLong -> ChannelBuffer(channel))
+            channel.sendMessage(message).queue()
+          case None =>
+        }
+      }
     }
   }
 

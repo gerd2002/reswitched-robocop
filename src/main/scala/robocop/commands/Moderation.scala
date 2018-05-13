@@ -218,7 +218,8 @@ object Moderation {
     }
   }
 
-  def lamelist(guild: Guild, moderator: Member): Array[Member] = guild.getMembers.toArray(Array[Member]()).filter(x => x.getEffectiveName.charAt(0) < 'A').filter(softCheck(moderator, _))
+  val lamechars: Array[Char] = "!\"#$%&'()*+,-./0123456789[]_`".chars().toArray.map(_.toChar)
+  def lamelist(guild: Guild, moderator: Member): Array[Member] = guild.getMembers.toArray(Array[Member]()).filter(x => lamechars.contains(x.getEffectiveName.charAt(0))).filter(softCheck(moderator, _))
 
   object Lameface extends Command {
     override def name: String = "lameface"
