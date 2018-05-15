@@ -234,7 +234,7 @@ object Moderation {
         val guild = message.getGuild
         if (message.getGuild.getSelfMember.hasPermission(Permission.NICKNAME_MANAGE)) {
           val targets = lamelist(guild, message.getMember)
-          targets.foreach(guild.getController.setNickname(_, "🐱 I AM A LAMEFACE 🐱").reason("Lamefacing").queue())
+          targets.foreach(x => guild.getController.setNickname(x, s"\uD82F\uDCA2${x.getEffectiveName.take(30)}").reason("Dehoisting").queue())
           Some(Loglines.logline(new ActionType.Lameface(targets.length), author))
         } else {
           throw new BotError.NoPermissions(Permission.NICKNAME_MANAGE)
