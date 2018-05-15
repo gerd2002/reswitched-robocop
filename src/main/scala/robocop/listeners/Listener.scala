@@ -224,7 +224,7 @@ class Listener(shardId: Int, webhookUrl: String) extends ListenerAdapter {
   }
 
   override def onGuildLeave(event: GuildLeaveEvent): Unit = {
-    loghook += s"📥 Joined guild ${event.getGuild.getName} `(${event.getGuild.getId})`"
+    loghook += s"📤 Left guild ${event.getGuild.getName} `(${event.getGuild.getId})`"
   }
 
   override def onGuildAvailable(event: GuildAvailableEvent): Unit = {
